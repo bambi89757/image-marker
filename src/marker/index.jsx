@@ -6,13 +6,23 @@ import _ from "lodash";
 import { initialAnchors } from "./util/index";
 export {default as ToolBar} from './components/toolbar';
 
+const placeholderUrl = '/assets/img/placeholder.png';
+
 
 const Wrapper = styled.div`
   position: relative;
+  .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 
 function PicAnnotate({initialValue, onChange, picture}, ref) {
-  const [loaded, setLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [marksInitialized, setMarksInitialized] = useState(false);
   const [marks, setMarks] = useState([]);
   const [currentMarkIndex, setCurrent] = useState(-1);
   const theme = {
@@ -481,6 +491,17 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
   }
 
   useEffect(() => {
+    // let outerWidth = wrapper.current.parentElement.clientWidth;
+    let outerWidth = wrapper.current.parentElement?.clientWidth;
+    let outerHeight = window.innerHeight;
+    setStageSize({
+      x: outerWidth,
+      y: outerHeight
+    });
+  }, [wrapper.current]);
+
+  useEffect(() => {
+    console.log('image ***', image, image?.naturalWidth, image?.naturalHeight)
     if (image?.naturalWidth && image?.naturalHeight) {
     let outerWidth = wrapper.current.parentElement.clientWidth;
       let width = outerWidth * 1;
@@ -489,20 +510,18 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
         x: width,
         y: height
       });
-      setStageSize({
-        x: width,
-        y: height
-      });
+      console.log('image s ***', width, height)
+      setImageLoaded(true);
     }
   }, [image]);
 
   useEffect(() => {
-    if (stageSize.x && initialValue?.length && loaded === false) {
+    if (stageSize.x && imageSize.x && initialValue?.length && imageLoaded && marksInitialized === false) {
       const value = initialValue || [];
-      setMarks(initialAnchors(value, stageSize));
-      setLoaded(true);
+      setMarks(initialAnchors(value, stageSize, imageSize));
+      setMarksInitialized(true);
     }
-  }, [stageSize.x, initialValue]);
+  }, [stageSize.x, imageSize.x, initialValue, imageLoaded]);
 
   useEffect(() => {
     if (currentMarkIndex > -1) {
@@ -534,87 +553,93 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
 
   return (
     <Wrapper ref={wrapper} style={{
-      width: imageSize.x + 'px',
-      height: imageSize.y + 'px',
+      width: stageSize.x + 'px',
+      height: stageSize.y + 'px',
     }}>
-      <Stage
-        ref={stage}
-        x={stagePos.x}
-        y={stagePos.y}
-        scale={{ x: scale, y: scale }}
-        width={stageSize.x}
-        height={stageSize.y}
-        onWheel={handleWheel}
-        onMouseDown={handleMousedown}
-        onMouseMove={handleMousemove}
-        onMouseUp={handleMouseup}
-        onMouseOver={e => hover(e, true)}
-        onMouseOut={e => hover(e, false)}
-      >
-        <Layer>
-          <Image
-            image={image}
-            x={stageSize.x / 2 - (stageSize.x * 1) / 2}
-            y={0}
-            width={imageSize.x}
-            height={imageSize.y}
-          ></Image>
-          {marks.map((mark, index) => (
-            <Group key={index}>
-              <Rect
-                name="marker"
-                index={index}
-                x={mark.corners[0]}
-                y={mark.corners[1]}
-                width={mark.width}
-                height={mark.height}
-                stroke={theme.main}
-                strokeWidth={3}
-              ></Rect>
-              <Group
-                visible={index === currentMarkIndex || index === hoverMark}
-              >
-                {mark.anchors.map((anchor, i) => (
-                  <Circle
-                    name="anchor"
-                    index={index}
-                    key={i}
-                    x={anchor.x}
-                    y={anchor.y}
-                    radius={4}
-                    fill={theme.backGround}
-                    stroke={theme.secondMain}
-                    local={[i, index]}
-                  />
-                ))}
-              </Group>
-              <Group>
-                <Circle
-                  name="mark"
+      {
+        imageLoaded ? 
+        <Stage
+          ref={stage}
+          x={stagePos.x}
+          y={stagePos.y}
+          scale={{ x: scale, y: scale }}
+          width={stageSize.x}
+          height={stageSize.y}
+          onWheel={handleWheel}
+          onMouseDown={handleMousedown}
+          onMouseMove={handleMousemove}
+          onMouseUp={handleMouseup}
+          onMouseOver={e => hover(e, true)}
+          onMouseOut={e => hover(e, false)}
+        >
+          <Layer>
+            <Image
+              image={image}
+              x={0}
+              y={stageSize.y / 2 - imageSize.y / 2}
+              width={imageSize.x}
+              height={imageSize.y}
+            ></Image>
+            {marks.map((mark, index) => (
+              <Group key={index}>
+                <Rect
+                  name="marker"
                   index={index}
                   x={mark.corners[0]}
                   y={mark.corners[1]}
-                  radius={8}
-                  fill={theme.backGround}
-                  stroke={theme.secondMain}
-                  strokeWidth={2}
-                />
-                <Text
-                  name="mark"
-                  index={index}
-                  x={mark.corners[0] - 3}
-                  y={mark.corners[1] - 5}
-                  text={mark.number + 1}
-                  fontStyle="bold"
-                  fill={theme.main}
-                  align="left"
-                  verticalAlign="middle"
-                />
+                  width={mark.width}
+                  height={mark.height}
+                  stroke={theme.main}
+                  strokeWidth={3}
+                ></Rect>
+                <Group
+                  visible={index === currentMarkIndex || index === hoverMark}
+                >
+                  {mark.anchors.map((anchor, i) => (
+                    <Circle
+                      name="anchor"
+                      index={index}
+                      key={i}
+                      x={anchor.x}
+                      y={anchor.y}
+                      radius={4}
+                      fill={theme.backGround}
+                      stroke={theme.secondMain}
+                      local={[i, index]}
+                    />
+                  ))}
+                </Group>
+                <Group>
+                  <Circle
+                    name="mark"
+                    index={index}
+                    x={mark.corners[0]}
+                    y={mark.corners[1]}
+                    radius={8}
+                    fill={theme.backGround}
+                    stroke={theme.secondMain}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    name="mark"
+                    index={index}
+                    x={mark.corners[0] - 3}
+                    y={mark.corners[1] - 5}
+                    text={mark.number + 1}
+                    fontStyle="bold"
+                    fill={theme.main}
+                    align="left"
+                    verticalAlign="middle"
+                  />
+                </Group>
               </Group>
-            </Group>
-          ))}
-        </Layer>
-      </Stage>
+            ))}
+          </Layer>
+        </Stage> : 
+        <div className="placeholder">
+          载入中...
+        </div>
+      }
     </Wrapper>
   );
 }

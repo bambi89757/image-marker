@@ -1,7 +1,7 @@
 import { findAnchorsByCorners } from ".";
 
 /** local start */
-export default (flatMarks, stageSize) => {
+export default (flatMarks, stageSize, imageSize) => {
   return flatMarks.map(m => {
     let {
       _x: x,
@@ -12,6 +12,7 @@ export default (flatMarks, stageSize) => {
       number
     } = m;
     const scale = stageSize.x / basicCanvas.x;
+    const top = stageSize.y / 2 - imageSize.y / 2;
     return {
       basicCanvas,
       number,
@@ -21,15 +22,15 @@ export default (flatMarks, stageSize) => {
       height: height * scale,
       anchors: findAnchorsByCorners(
         x * scale,
-        y * scale,
+        y * scale + top,
         (x + width) * scale,
-        (y + height) * scale
+        (y + height) * scale + top
       ),
       corners: [
         x * scale,
-        y * scale,
+        y * scale + top,
         (x + width) * scale,
-        (y + height) * scale
+        (y + height) * scale + top
       ]
     };
   });
