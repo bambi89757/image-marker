@@ -6,6 +6,8 @@ import Annotate, { ToolBar } from "../marker";
 import { flatServerMarksToLocal } from "./util";
 import Detail from "./detail";
 
+const reId = /^\d+$/;
+
 const Example = () => {
     const [draft, setDraft] = useState(null);
     const [marks, setMarks] = useState([]);
@@ -24,7 +26,7 @@ const Example = () => {
     return (
       <>
         <ToolBar draft={draft} annotate={annotate}>
-          {id && <Annotate ref={annotate} initialValue={marks} draft={draft} /> }
+          {reId.test(id) && <Annotate ref={annotate} initialValue={marks} draft={draft} /> }
         </ToolBar>
         <Detail draft={draft} value={marks} onChange={setMarks}/>
       </>
