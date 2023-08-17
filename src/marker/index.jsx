@@ -11,7 +11,7 @@ const Wrapper = styled.div`
   position: relative;
 `;
 
-function Annotate({initialValue, onChange, draft}, ref) {
+function PicAnnotate({initialValue, onChange, draft}, ref) {
   const [loaded, setLoaded] = useState(false);
   const [marks, setMarks] = useState([]);
   const [currentMarkIndex, setCurrent] = useState(-1);
@@ -619,5 +619,5 @@ function Annotate({initialValue, onChange, draft}, ref) {
   );
 }
 
-export default forwardRef(Annotate);
+export default forwardRef(PicAnnotate);
 

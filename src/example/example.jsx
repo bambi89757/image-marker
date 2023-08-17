@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import '@/assets/css/base.css';
 import { useParams } from "react-router-dom";
 import { getDraftDetail, getMarks } from "./mocks";
-import Annotate, { ToolBar } from "../marker";
+import PicAnnotate, { ToolBar } from "../marker";
 import { flatServerMarksToLocal } from "./util";
 import Detail from "./detail";
 
@@ -12,7 +12,7 @@ const Example = () => {
     const [draft, setDraft] = useState(null);
     const [marks, setMarks] = useState([]);
     const {id} = useParams();
-    const annotate = useRef(null);
+    const picAnnotate = useRef(null);
 
     async function getDetails(id) {
         const draftRes = await getDraftDetail(id);
@@ -25,8 +25,8 @@ const Example = () => {
     }, [])
     return (
       <>
-        <ToolBar draft={draft} annotate={annotate}>
-          {reId.test(id) && <Annotate ref={annotate} initialValue={marks} draft={draft} /> }
+        <ToolBar draft={draft} picAnnotate={picAnnotate}>
+          {reId.test(id) && <PicAnnotate ref={picAnnotate} initialValue={marks} draft={draft} /> }
         </ToolBar>
         <Detail draft={draft} value={marks} onChange={setMarks}/>
       </>

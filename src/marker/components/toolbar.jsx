@@ -31,7 +31,7 @@ const Wrapper = styled.div`
   }
 `;
 
-export default ({draft, annotate, children}) => {
+export default ({draft, picAnnotate, children}) => {
     const [imageBase64Url, setBase64] = useState("");
     const download = useRef();
     
@@ -49,19 +49,19 @@ export default ({draft, annotate, children}) => {
                 type="text"
                 shape={"circle"}
                 icon={<CommentOutlined />}
-                onClick={annotate.current?.handleMark || (()=> {})}
+                onClick={picAnnotate.current?.handleMark || (()=> {})}
             />
             <Button
                 type="text"
                 shape={"circle"}
                 icon={<ZoomInOutlined />}
-                onClick={annotate.current?.handleZoomIn || (()=> {})}
+                onClick={picAnnotate.current?.handleZoomIn || (()=> {})}
             />
             <Button
                 type="text"
                 shape={"circle"}
                 icon={<ZoomOutOutlined />}
-                onClick={annotate.current?.handleZoomOut || (()=> {})}
+                onClick={picAnnotate.current?.handleZoomOut || (()=> {})}
             />
             <Button
                 type="text"
