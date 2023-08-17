@@ -1,7 +1,7 @@
 [
   {
     "number": 0,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注0了这里",
     "updated_at": 1619507022524,
@@ -18,7 +18,7 @@
   },
   {
     "number": 1,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注1了这里",
     "updated_at": 1619507022524,
@@ -35,7 +35,7 @@
   },
   {
     "number": 1,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注1了这里2",
     "updated_at": 1619507022524,
@@ -52,7 +52,7 @@
   },
   {
     "number": 1,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "nikki",
     "content": "我标注1了这里_3",
     "updated_at": 1619420622524,
@@ -69,7 +69,7 @@
   },
   {
     "number": 2,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里",
     "updated_at": 1619420622524,
@@ -86,7 +86,7 @@
   },
   {
     "number": 2,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里_2",
     "updated_at": 1619247822524,
@@ -103,7 +103,7 @@
   },
   {
     "number": 2,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里_3",
     "updated_at": 1619334222524,
@@ -120,7 +120,7 @@
   },
   {
     "number": 3,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注3了这里",
     "updated_at": 1619247822524,
@@ -137,7 +137,7 @@
   },
   {
     "number": 3,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注3了这里_2",
     "updated_at": 1619161422524,
@@ -154,7 +154,7 @@
   },
   {
     "number": 3,
-    "draft_id": "2",
+    "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里_3",
     "updated_at": 1619075022524,

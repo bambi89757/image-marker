@@ -11,7 +11,7 @@ const Wrapper = styled.div`
   position: relative;
 `;
 
-function PicAnnotate({initialValue, onChange, draft}, ref) {
+function PicAnnotate({initialValue, onChange, picture}, ref) {
   const [loaded, setLoaded] = useState(false);
   const [marks, setMarks] = useState([]);
   const [currentMarkIndex, setCurrent] = useState(-1);
@@ -35,7 +35,7 @@ function PicAnnotate({initialValue, onChange, draft}, ref) {
   const [onMoveStage, setOnceMoveStage] = useState(false);
   const [movePos, setMovePos] = useState({ x: 0, y: 0 });
 
-  const [image] = useImage(draft?.url);
+  const [image] = useImage(picture?.url);
   const stage = useRef();
   const wrapper = useRef();
 

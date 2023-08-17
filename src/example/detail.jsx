@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 
-function Content({id, draft, value, onChange}) {
+function Content({id, picture, value, onChange}) {
     return (
         <>
             <button onClick={()=> {
@@ -10,7 +10,7 @@ function Content({id, draft, value, onChange}) {
                 onChange(newValue);
             }}>onChange</button>
             <p>稿件ID：{id}</p>
-            <p>稿件信息：{JSON.stringify(draft, undefined, 4)}</p>
+            <p>稿件信息：{JSON.stringify(picture, undefined, 4)}</p>
             <p>稿件内容：{JSON.stringify(value, undefined, 4)}</p>
         </>
     )
@@ -20,10 +20,10 @@ function Loading() {
     return<div>loading...</div>
 }
 
-function Detail({key, draft, value, onChange}) {
+function Detail({key, picture, value, onChange}) {
     return (
         <Suspense fallback={<Loading />}>
-            <Content id={key} draft={draft} value={value} onChange={onChange}/>
+            <Content id={key} picture={picture} value={value} onChange={onChange}/>
         </Suspense>
     )
 }

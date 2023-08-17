@@ -9,26 +9,26 @@ import Detail from "./detail";
 const reId = /^\d+$/;
 
 const Example = () => {
-    const [draft, setDraft] = useState(null);
+    const [picture, setDraft] = useState(null);
     const [marks, setMarks] = useState([]);
     const {id} = useParams();
     const picAnnotate = useRef(null);
 
     async function getDetails(id) {
-        const draftRes = await getDraftDetail(id);
+        const pictureRes = await getDraftDetail(id);
         const marksRes = await getMarks(id);
         setMarks(flatServerMarksToLocal(marksRes));
-        setDraft(draftRes);
+        setDraft(pictureRes);
     }
     useEffect(()=> {
         getDetails(id);
     }, [])
     return (
       <>
-        <ToolBar draft={draft} picAnnotate={picAnnotate}>
-          {reId.test(id) && <PicAnnotate ref={picAnnotate} initialValue={marks} draft={draft} /> }
+        <ToolBar picture={picture} picAnnotate={picAnnotate}>
+          {reId.test(id) && <PicAnnotate ref={picAnnotate} initialValue={marks} picture={picture} /> }
         </ToolBar>
-        <Detail draft={draft} value={marks} onChange={setMarks}/>
+        <Detail picture={picture} value={marks} onChange={setMarks}/>
       </>
     );
   };

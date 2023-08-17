@@ -31,7 +31,7 @@ const Wrapper = styled.div`
   }
 `;
 
-export default ({draft, picAnnotate, children}) => {
+export default ({picture, picAnnotate, children}) => {
     const [imageBase64Url, setBase64] = useState("");
     const download = useRef();
     
@@ -39,8 +39,8 @@ export default ({draft, picAnnotate, children}) => {
       download.current.click();
     }
     useEffect(() => {
-        getBase64Image(draft?.url, setBase64);
-      }, [draft?.id]);
+        getBase64Image(picture?.url, setBase64);
+      }, [picture?.id]);
     return (
       <Wrapper>
         <div className="tools">
@@ -73,7 +73,7 @@ export default ({draft, picAnnotate, children}) => {
             <a
             ref={download}
             href={imageBase64Url}
-            download={`${draft?.id}.${draft?.url?.split(".").reverse()[0]}`}
+            download={`${picture?.id}.${picture?.url?.split(".").reverse()[0]}`}
             ></a>
         </div>
         {children}

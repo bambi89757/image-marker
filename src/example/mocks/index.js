@@ -1,7 +1,7 @@
 // import API from "./index";
 import versions from "./versions.json";
 import marks from "./marks.json";
-import drafts from "./drafts.json";
+import pictures from "./pictures.json";
 
 export function getMarks(id) {
   if (!id) return;
@@ -10,7 +10,7 @@ export function getMarks(id) {
 
 export function getDrafts(id) {
 //   if (!id) return;
-  return Promise.resolve(drafts);
+  return Promise.resolve(pictures);
 }
 
 export function getVersions() {
@@ -19,5 +19,5 @@ export function getVersions() {
 
 export function getDraftDetail(id) {
   if (!id) return;
-  return Promise.resolve(drafts.find(one => one.id === id) || {});
+  return Promise.resolve(pictures.find(one => one.id === id) || {});
 }
