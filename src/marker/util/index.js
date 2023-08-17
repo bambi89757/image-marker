@@ -1,6 +1,6 @@
 
-import toLocalMarks from './local';
-import toServerMarks from './server';
+export { default as initialAnchors} from "./anchors";
+
 /** utils start */
 
 // 输入四角坐标值，判断哪个坐标值离左上角最近，其中特殊情况需要进行坐标查找工作
@@ -119,11 +119,6 @@ export function getBase64Image(src, fn) {
     let dataURL = canvas.toDataURL('image/' + ext);
     fn(dataURL);
   }
-}
-
-export default {
-  toLocalMarks,
-  toServerMarks
 }
 
 /** utils end */

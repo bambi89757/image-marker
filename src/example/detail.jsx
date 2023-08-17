@@ -20,7 +20,7 @@ function Loading() {
     return<div>loading...</div>
 }
 
-function Marker({key, draft, value, onChange}) {
+function Detail({key, draft, value, onChange}) {
     return (
         <Suspense fallback={<Loading />}>
             <Content id={key} draft={draft} value={value} onChange={onChange}/>
@@ -28,4 +28,4 @@ function Marker({key, draft, value, onChange}) {
     )
 }
 
-export default Marker;
+export default Detail;

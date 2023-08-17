@@ -3,7 +3,9 @@ import { Stage, Layer, Group, Image, Rect, Circle, Text } from "react-konva";
 import styled from "styled-components";
 import useImage from "use-image";
 import _ from "lodash";
-import { initialAnchors } from "./util/local";
+import { initialAnchors } from "./util/index";
+export {default as ToolBar} from './components/toolbar';
+
 
 const Wrapper = styled.div`
   position: relative;
@@ -618,3 +620,4 @@ function Annotate({initialValue, onChange, draft}, ref) {
 }
 
 export default forwardRef(Annotate);
+
