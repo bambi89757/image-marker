@@ -3,7 +3,7 @@
     "name": "pic1",
     "id": "1",
     "version_id": "3",
-    "url": "https://huasheng-static.zcool.com.cn/hs/coillustration/anmx-1.jpg"
+    "url": "assets/img/example_vertical.jpg"
   },
   {
     "name": "pic2",
@@ -15,13 +15,13 @@
     "name": "pic3",
     "id": "3",
     "version_id": "3",
-    "url": "https://huasheng-static.zcool.com.cn/hs/coillustration/anmx-3.jpg"
+    "url": "assets/img/example_vertical_hamster1.jpg"
   },
   {
     "name": "pic4",
     "id": "4",
     "version_id": "3",
-    "url": "https://huasheng-static.zcool.com.cn/hs/coillustration/anmx-4.jpg"
+    "url": "assets/img/example_vertical_fighting.jpg"
   },
   {
     "name": "pic4",

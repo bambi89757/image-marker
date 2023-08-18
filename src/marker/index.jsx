@@ -6,7 +6,14 @@ import _ from "lodash";
 import { initialAnchors } from "./util/index";
 export {default as ToolBar} from './components/toolbar';
 
-const placeholderUrl = '/assets/img/placeholder.png';
+const failedUrl = ' ';
+function getOuterWidth(element) {
+  return element.parentElement?.clientWidth - parseFloat(getComputedStyle(element).borderLeftWidth) - parseFloat(getComputedStyle(element).borderRightWidth);
+}
+
+function getOuterHeight(element) {
+  return element.parentElement?.clientHeight - parseFloat(getComputedStyle(element).borderTopWidth) - parseFloat(getComputedStyle(element).borderBottomWidth);
+}
 
 
 const Wrapper = styled.div`
@@ -20,7 +27,7 @@ const Wrapper = styled.div`
   }
 `;
 
-function PicAnnotate({initialValue, onChange, picture}, ref) {
+function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [marksInitialized, setMarksInitialized] = useState(false);
   const [marks, setMarks] = useState([]);
@@ -45,9 +52,18 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
   const [onMoveStage, setOnceMoveStage] = useState(false);
   const [movePos, setMovePos] = useState({ x: 0, y: 0 });
 
-  const [image] = useImage(picture?.url);
+  const [image, imageStatus] = useImage(picture?.url || failedUrl);
   const stage = useRef();
   const wrapper = useRef();
+
+  function handleResize() {
+    let outerWidth = getOuterWidth(wrapper.current);
+    let outerHeight = getOuterHeight(wrapper.current);
+    setStageSize({
+      x: outerWidth,
+      y: outerHeight
+    });
+  }
 
   function handleMark() {
     setMode("mark");
@@ -491,29 +507,33 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
   }
 
   useEffect(() => {
-    // let outerWidth = wrapper.current.parentElement.clientWidth;
-    let outerWidth = wrapper.current.parentElement?.clientWidth;
-    let outerHeight = window.innerHeight;
-    setStageSize({
-      x: outerWidth,
-      y: outerHeight
-    });
-  }, [wrapper.current]);
+    console.log(wrapper.current);
+    const outer = wrapper.current.parentElement;
+    handleResize();
+    outer.onresize = handleResize;
+    return () => {
+      outer.onresize = null;
+    }
+  }, []);
 
   useEffect(() => {
-    console.log('image ***', image, image?.naturalWidth, image?.naturalHeight)
-    if (image?.naturalWidth && image?.naturalHeight) {
-    let outerWidth = wrapper.current.parentElement.clientWidth;
-      let width = outerWidth * 1;
-      const height = (width * image.naturalHeight) / image.naturalWidth;
+    if (image?.naturalWidth && image?.naturalHeight && stageSize.x) {
+      let width = stageSize.x * 1;
+      let height = stageSize.y * 1;
+      const imageWH = image.naturalWidth / image.naturalHeight;
+      const outerWH = width / height;
+      if (imageWH < outerWH) {
+        width = height * imageWH;
+      } else {
+        height = width / imageWH;
+      }
       setImageSize({
         x: width,
         y: height
       });
-      console.log('image s ***', width, height)
       setImageLoaded(true);
     }
-  }, [image]);
+  }, [image, stageSize.x]);
 
   useEffect(() => {
     if (stageSize.x && imageSize.x && initialValue?.length && imageLoaded && marksInitialized === false) {
@@ -552,7 +572,7 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
   }));
 
   return (
-    <Wrapper ref={wrapper} style={{
+    <Wrapper {...props} ref={wrapper} style={{
       width: stageSize.x + 'px',
       height: stageSize.y + 'px',
     }}>
@@ -565,7 +585,7 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
           scale={{ x: scale, y: scale }}
           width={stageSize.x}
           height={stageSize.y}
-          onWheel={handleWheel}
+          // onWheel={handleWheel}
           onMouseDown={handleMousedown}
           onMouseMove={handleMousemove}
           onMouseUp={handleMouseup}
@@ -575,7 +595,7 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
           <Layer>
             <Image
               image={image}
-              x={0}
+              x={stageSize.x / 2 - imageSize.x / 2}
               y={stageSize.y / 2 - imageSize.y / 2}
               width={imageSize.x}
               height={imageSize.y}
@@ -637,7 +657,8 @@ function PicAnnotate({initialValue, onChange, picture}, ref) {
           </Layer>
         </Stage> : 
         <div className="placeholder">
-          载入中...
+          {imageStatus === "loading" && picture?.url && "载入中..."}
+          {imageStatus === "failed" && "载入失败..."}
         </div>
       }
     </Wrapper>

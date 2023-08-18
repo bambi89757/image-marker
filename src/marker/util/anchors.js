@@ -11,8 +11,9 @@ export default (flatMarks, stageSize, imageSize) => {
       basicCanvas,
       number
     } = m;
-    const scale = stageSize.x / basicCanvas.x;
+    const scale = imageSize.x / basicCanvas.x;
     const top = stageSize.y / 2 - imageSize.y / 2;
+    const left = stageSize.x / 2 - imageSize.x / 2;
     return {
       basicCanvas,
       number,
@@ -21,15 +22,15 @@ export default (flatMarks, stageSize, imageSize) => {
       width: width * scale,
       height: height * scale,
       anchors: findAnchorsByCorners(
-        x * scale,
+        x * scale + left,
         y * scale + top,
-        (x + width) * scale,
+        (x + width) * scale + left,
         (y + height) * scale + top
       ),
       corners: [
-        x * scale,
+        x * scale + left,
         y * scale + top,
-        (x + width) * scale,
+        (x + width) * scale + left,
         (y + height) * scale + top
       ]
     };

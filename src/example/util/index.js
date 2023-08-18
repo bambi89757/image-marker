@@ -34,7 +34,7 @@ export const flatServerMarksToLocal = (serverMarks) => {
 /** server start */
 
 // 转回提交格式中的position字段
-const _convertToPosition = ({mark, stageSize}) => {
+const _convertToPosition = ({mark, imageSize}) => {
     const {width, height, corners} = mark;
     return {
       width,
@@ -42,15 +42,15 @@ const _convertToPosition = ({mark, stageSize}) => {
       x: corners[0],
       y: corners[1],
       basicCanvas: {
-        x: stageSize.x,
-        y: stageSize.y
+        x: imageSize.x,
+        y: imageSize.y
       }
     }
   }
   
-const toServerMarks = (localMarks, serverMarks, stageSize) => {
+const toServerMarks = (localMarks, serverMarks, imageSize) => {
     return serverMarks.map((one)=> {
-      const position = _convertToPosition(localMarks[one.number], stageSize);
+      const position = _convertToPosition(localMarks[one.number], imageSize);
       return {
         ...one,
         position

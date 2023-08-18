@@ -10,13 +10,8 @@ import { styled } from "styled-components";
 import React, { useEffect, useRef, useState } from "react";
 
 const Wrapper = styled.div`
-  width: 100%;
-  height: 100%;
   position: relative;
   .tools {
-    position: absolute;
-    top: 20px;
-    left: 0;
     z-index: 99999;
     width: 100%;
     display: flex;
@@ -43,6 +38,7 @@ export default ({picture, picAnnotate, children}) => {
       }, [picture?.id]);
     return (
       <Wrapper>
+        {children}
         <div className="tools">
             <div className="handle-bar">
             <Button
@@ -76,7 +72,7 @@ export default ({picture, picAnnotate, children}) => {
             download={`${picture?.id}.${picture?.url?.split(".").reverse()[0]}`}
             ></a>
         </div>
-        {children}
+        
       </Wrapper>
     )
 }
