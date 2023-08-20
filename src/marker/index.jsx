@@ -62,6 +62,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
 
   const [image, imageStatus] = useImage(picture?.url || failedUrl);
   const stage = useRef();
+  const imageRef = useRef();
   const wrapper = useRef();
   const top = useMemo(()=> {
     return stageSize.y / 2 - imageSize.y / 2;
@@ -174,6 +175,9 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   }
 
   function addSelect() {
+    if (hasExceededBoundary()) {
+      return;
+    }
     let x = (stage.current.getPointerPosition().x - stagePos.x) / scale;
     let y = (stage.current.getPointerPosition().y - stagePos.y) / scale;
     let tempMarkList = _.cloneDeep(marks);
@@ -219,6 +223,9 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   }
 
   function changeAnchor() {
+    if (hasExceededBoundary()) {
+      return;
+    }
     if (onChanging && currentAnchorIndex > -1) {
       let tempMarkList = _.cloneDeep(marks);
       let currentAnchor =
@@ -316,6 +323,10 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
         y - movePos.y,
         tempMarkList[currentMarkIndex].corners
       );
+      if (hasExceededBoundary([
+        [tempMarkList[currentMarkIndex].corners[0] * scale + stagePos.x, tempMarkList[currentMarkIndex].corners[1] * scale + stagePos.y],
+        [tempMarkList[currentMarkIndex].corners[2] * scale + stagePos.x, tempMarkList[currentMarkIndex].corners[3] * scale + stagePos.y]
+      ])) return;
       setMovePos({ x, y });
       tempMarkList[currentMarkIndex].anchors = findAnchorsByCorners(
         tempMarkList[currentMarkIndex].corners[0],
@@ -502,11 +513,26 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
     return [corners[0] + x, corners[1] + y, corners[2] + x, corners[3] + y];
   }
 
+  function hasExceededBoundary (pointers = [[stage.current.getPointerPosition().x, stage.current.getPointerPosition().y]]) {
+    const imageXStart = stagePos.x + left * scale;
+    const imageXEnd = imageXStart + imageSize.x * scale;
+    const imageYStart = stagePos.y + top * scale;
+    const imageYEnd = imageYStart + imageSize.y * scale;
+    return pointers.some(pointer => {
+      // console.log(`hasExceededBoundary ${imageYStart} ${pointerY} ${imageYEnd}`)
+      console.log(`hasExceededBoundary ${imageYStart} ${pointer[1]} ${imageYEnd}`)
+      return pointer[0] < imageXStart || pointer[0] > imageXEnd || pointer[1] < imageYStart || pointer[1] > imageYEnd;
+    });
+  }
+
   // 放大缩小
   function zoom(centralPoint, scaleBy, isZoomIn = true) {
     setScale(scale => {
-      let oldScale = scale;
-      let newScale = isZoomIn ? oldScale * scaleBy : oldScale / scaleBy;
+      const oldScale = scale;
+      const ZOOMIN_SCALE = oldScale * scaleBy;
+      const ZOOMOUT_SCALE = oldScale / scaleBy;
+      const ZOOMOUT_SCALE_MIN = 0.4;
+      let newScale = isZoomIn ? ZOOMIN_SCALE : (ZOOMOUT_SCALE > ZOOMOUT_SCALE_MIN ? ZOOMOUT_SCALE : ZOOMOUT_SCALE_MIN);
       let zoomPoint = {
         x: centralPoint.x / oldScale - stage.current.x() / oldScale,
         y: centralPoint.y / oldScale - stage.current.y() / oldScale
@@ -598,20 +624,26 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
     <Wrapper {...props} ref={wrapper} style={{
       width: stageSize.x + 'px',
       height: stageSize.y + 'px',
-    }}>
+    }}  >
       <button 
         onClick={() => {
           console.log('stageSize', stageSize);
           console.log('stagePos', stagePos);
+          console.log('imageRef', imageRef.current.x(), imageRef.current.y(), imageRef.current.width(), imageRef.current.height() );
           const getClientRect = stage.current.getClientRect({ skipTransform: true})
           const size = stage.current.size();
           const width = stage.current.width();
           const height = stage.current.height();
           const x = stage.current.x();
           const y = stage.current.y();
+          const isClientRectOnScreen = stage.current.isClientRectOnScreen();
+          const pointerX = stage.current.getPointerPosition().x;
+          const pointerY = stage.current.getPointerPosition().y;
           console.log('width height', width, height);
           console.log('x y', x, y);
-        }} 
+          console.log('isClientRectOnScreen', isClientRectOnScreen);
+          console.log('pointerX pointerY', pointerX, pointerY);
+        }}
         style={{
           position: 'fixed',
           top:0,
@@ -637,6 +669,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
         >
           <Layer>
             <Image
+              ref={imageRef}
               image={image}
               x={stageSize.x / 2 - imageSize.x / 2}
               y={stageSize.y / 2 - imageSize.y / 2}
@@ -653,7 +686,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
                   width={mark.width}
                   height={mark.height}
                   stroke={theme.main}
-                  strokeWidth={3}
+                  strokeWidth={3 / scale}
                 ></Rect>
                 <Group
                   visible={index === currentMarkIndex || index === hoverMark}
@@ -665,7 +698,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
                       key={i}
                       x={anchor.x}
                       y={anchor.y}
-                      radius={4}
+                      radius={4 / scale}
                       fill={theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
                       stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
                       local={[i, index]}
@@ -678,17 +711,18 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
                     index={index}
                     x={mark.corners[0]}
                     y={mark.corners[1]}
-                    radius={8}
+                    radius={8 / scale}
                     fill={theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
                     stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
-                    strokeWidth={2}
+                    strokeWidth={2 / scale}
                   />
                   <Text
                     name="mark"
                     index={index}
-                    x={mark.corners[0] - 3}
-                    y={mark.corners[1] - 5}
+                    x={mark.corners[0] - 3 / scale}
+                    y={mark.corners[1] - 5 / scale}
                     text={mark.number + 1}
+                    fontSize={12 / scale}
                     fontStyle="bold"
                     fill={theme.main}
                     align="left"
