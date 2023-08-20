@@ -70,7 +70,6 @@ const Example = () => {
     const [pictureList, setPictureList] = useState(null);
 
     const {id} = useParams();
-    let ID = id;
     const picAnnotate = useRef(null);
 
     async function getDetails(id) {
