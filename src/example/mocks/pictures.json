@@ -3,13 +3,13 @@
     "name": "pic1",
     "id": "1",
     "version_id": "3",
-    "url": "assets/img/example_vertical.jpg"
+    "url": "assets/img/example.png"
   },
   {
     "name": "pic2",
     "id": "2",
     "version_id": "3",
-    "url": "assets/img/example.png"
+    "url": "assets/img/example_vertical.jpg"
   },
   {
     "name": "pic3",

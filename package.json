@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf dist/* && webpack",
-    "server": "cd example && npx http-server -c-1 . -p 7777 --proxy http://localhost:7777? -o /2",
+    "server": "cd example && npx http-server -c-1 . -p 7777 --proxy http://localhost:7777? -o /1",
     "dev": "npm run build && npm run server"
   },
   "keywords": [

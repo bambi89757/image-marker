@@ -8,8 +8,7 @@ export function getMarks(id) {
   return Promise.resolve(marks);
 }
 
-export function getPictures(id) {
-//   if (!id) return;
+export function getPictures() {
   return Promise.resolve(pictures);
 }
 
@@ -19,5 +18,5 @@ export function getVersions() {
 
 export function getPictureDetail(id) {
   if (!id) return;
-  return Promise.resolve(pictures.find(one => one.id === id) || {});
+  return Promise.resolve(pictures.find(one => one.id == id) || {});
 }

@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Stage, Layer, Group, Image, Rect, Circle, Text } from "react-konva";
 import styled from "styled-components";
 import useImage from "use-image";
@@ -7,6 +7,16 @@ import { initialAnchors } from "./util/index";
 export {default as ToolBar} from './components/toolbar';
 
 const failedUrl = ' ';
+export const DEFAULT_MAIN = "#ff3756";
+export const DEFAULT_ANCHOR_BORDER = "#f96e84";
+export const DEFAULT_ANCHOR_BACKGROUND = "#fff";
+const defaultTheme = {
+  main: DEFAULT_MAIN,
+  anchor: {
+    border: DEFAULT_ANCHOR_BORDER,
+    backGround: DEFAULT_ANCHOR_BACKGROUND
+  },
+};
 function getOuterWidth(element) {
   return element.parentElement?.clientWidth - parseFloat(getComputedStyle(element).borderLeftWidth) - parseFloat(getComputedStyle(element).borderRightWidth);
 }
@@ -27,16 +37,14 @@ const Wrapper = styled.div`
   }
 `;
 
-function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
+
+
+function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...props}, ref) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [marksInitialized, setMarksInitialized] = useState(false);
   const [marks, setMarks] = useState([]);
   const [currentMarkIndex, setCurrent] = useState(-1);
-  const theme = {
-    main: "#ff3756",
-    secondMain: "#f96e84",
-    backGround: "#fff"
-  };
+
 
   const [mode, setMode] = useState("normal");
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
@@ -55,6 +63,12 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   const [image, imageStatus] = useImage(picture?.url || failedUrl);
   const stage = useRef();
   const wrapper = useRef();
+  const top = useMemo(()=> {
+    return stageSize.y / 2 - imageSize.y / 2;
+  }, [stageSize.y, imageSize.y])
+  const left = useMemo(()=> {
+    return stageSize.x / 2 - imageSize.x / 2;
+  }, [stageSize.x, imageSize.x]);
 
   function handleResize() {
     let outerWidth = getOuterWidth(wrapper.current);
@@ -71,14 +85,14 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
 
   function handleWheel(e) {
     e.evt.preventDefault();
-    zoom(stage.current.getPointerPosition(), 1.1, e.evt.deltaY > 0);
+    zoom(stage.current.getPointerPosition(), 1.1, e.evt.deltaY < 0);
   }
 
   function handleZoomIn() {
     zoom(
       {
-        x: stageSize.x * 0.5,
-        y: imageSize.y * 0.5 + 100
+        x: stage.current.width() * 0.5 + stagePos.x,
+        y: stage.current.height() * 0.5 + stagePos.y
       },
       1.2,
       true
@@ -88,8 +102,8 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   function handleZoomOut() {
     zoom(
       {
-        x: stageSize.x * 0.5,
-        y: imageSize.y * 0.5 + 100
+        x: stage.current.width() * 0.5 + stagePos.x,
+        y: stage.current.height() * 0.5 + stagePos.y
       },
       1.2,
       false
@@ -143,9 +157,9 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
     if (onDrawing) return;
     setOnceDraw(true);
     let positionX =
-      (stage.current.getPointerPosition().x - stage.current.x()) / scale;
+      (stage.current.getPointerPosition().x - stagePos.x) / scale;
     let positionY =
-      (stage.current.getPointerPosition().y - stage.current.y()) / scale;
+      (stage.current.getPointerPosition().y - stagePos.y) / scale;
     let mark = {
       width: 0,
       height: 0,
@@ -160,8 +174,8 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   }
 
   function addSelect() {
-    let x = (stage.current.getPointerPosition().x - stage.current.x()) / scale;
-    let y = (stage.current.getPointerPosition().y - stage.current.y()) / scale;
+    let x = (stage.current.getPointerPosition().x - stagePos.x) / scale;
+    let y = (stage.current.getPointerPosition().y - stagePos.y) / scale;
     let tempMarkList = _.cloneDeep(marks);
     tempMarkList[currentMarkIndex].width = Math.abs(
       x - tempMarkList[currentMarkIndex].startX
@@ -186,11 +200,13 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   }
 
   function addSelectEnd() {
-    moveModal(
-      marks[currentMarkIndex].corners[1],
-      marks[currentMarkIndex].corners[2]
-    );
-    setOnceDraw(false);
+    if (onDrawing) {
+      moveModal(
+        marks[currentMarkIndex].corners[1],
+        marks[currentMarkIndex].corners[2]
+      );
+      setOnceDraw(false);
+    }
   }
 
   function changeAnchorStart(i, index) {
@@ -212,9 +228,9 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
       switch (currentAnchor.type) {
         case "corner":
           x =
-            (stage.current.getPointerPosition().x - stage.current.x()) / scale;
+            (stage.current.getPointerPosition().x - stagePos.x) / scale;
           y =
-            (stage.current.getPointerPosition().y - stage.current.y()) / scale;
+            (stage.current.getPointerPosition().y - stagePos.y) / scale;
           tempMarkList[currentMarkIndex].width = Math.abs(
             x - tempMarkList[currentMarkIndex].startX
           );
@@ -230,7 +246,7 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
           break;
         case "x-edge":
           x =
-            (stage.current.getPointerPosition().x - stage.current.x()) / scale;
+            (stage.current.getPointerPosition().x - stagePos.x) / scale;
           tempMarkList[currentMarkIndex].width = Math.abs(
             x - tempMarkList[currentMarkIndex].startX
           );
@@ -243,7 +259,7 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
           break;
         case "y-edge":
           y =
-            (stage.current.getPointerPosition().y - stage.current.y()) / scale;
+            (stage.current.getPointerPosition().y - stagePos.y) / scale;
           tempMarkList[currentMarkIndex].height = Math.abs(
             y - tempMarkList[currentMarkIndex].startY
           );
@@ -270,17 +286,19 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   }
 
   function changeAnchorEnd() {
-    moveModal(
-      marks[currentMarkIndex].corners[1],
-      marks[currentMarkIndex].corners[2]
-    );
-    setOnceChange(false);
+    if (onChanging) {
+      moveModal(
+        marks[currentMarkIndex].corners[1],
+        marks[currentMarkIndex].corners[2]
+      );
+      setOnceChange(false);
+    }
   }
 
   function changePositionStart(index) {
     if (onLocating) return;
-    let x = (stage.current.getPointerPosition().x - stage.current.x()) / scale;
-    let y = (stage.current.getPointerPosition().y - stage.current.y()) / scale;
+    let x = (stage.current.getPointerPosition().x - stagePos.x) / scale;
+    let y = (stage.current.getPointerPosition().y - stagePos.y) / scale;
     setMovePos({ x, y });
     setCurrent(index);
     setOnceLocate(true);
@@ -290,9 +308,9 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
     if (onLocating) {
       let tempMarkList = _.cloneDeep(marks);
       let x =
-        (stage.current.getPointerPosition().x - stage.current.x()) / scale;
+        (stage.current.getPointerPosition().x - stagePos.x) / scale;
       let y =
-        (stage.current.getPointerPosition().y - stage.current.y()) / scale;
+        (stage.current.getPointerPosition().y - stagePos.y) / scale;
       tempMarkList[currentMarkIndex].corners = findTranslatePoint(
         x - movePos.x,
         y - movePos.y,
@@ -311,18 +329,20 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   }
 
   function changePositionEnd() {
-    moveModal(
-      marks[currentMarkIndex].corners[1],
-      marks[currentMarkIndex].corners[2]
-    );
-    setMovePos({ x: 0, y: 0 });
-    setOnceLocate(false);
+    if (onLocating) {
+      moveModal(
+        marks[currentMarkIndex].corners[1],
+        marks[currentMarkIndex].corners[2]
+      );
+      setMovePos({ x: 0, y: 0 });
+      setOnceLocate(false);
+    }
   }
 
   function moveStageStart() {
     if (onMoveStage) return;
-    let x = stage.current.getPointerPosition().x - stage.current.x();
-    let y = stage.current.getPointerPosition().y - stage.current.y();
+    let x = stage.current.getPointerPosition().x - stagePos.x;
+    let y = stage.current.getPointerPosition().y - stagePos.y;
     setMovePos({ x, y });
     setOnceMoveStage(true);
   }
@@ -330,17 +350,18 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
   function moveStage() {
     if (onMoveStage) {
       let x =
-        stage.current.getPointerPosition().x - stage.current.x() - movePos.x;
+        stage.current.getPointerPosition().x - movePos.x;
       let y =
-        stage.current.getPointerPosition().y - stage.current.y() - movePos.y;
+        stage.current.getPointerPosition().y - movePos.y;
       setStagePos({
-        x: stagePos.x + x,
-        y: stagePos.y + y
+        x,
+        y
       });
     }
   }
 
   function moveStageEnd() {
+    console.log('moveStageEnd', stagePos, stagePos.x, stagePos.y)
     setMovePos({ x: 0, y: 0 });
     setOnceMoveStage(false);
   }
@@ -483,26 +504,28 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
 
   // 放大缩小
   function zoom(centralPoint, scaleBy, isZoomIn = true) {
-    let oldScale = scale;
-    let newScale = isZoomIn ? scale * scaleBy : scale / scaleBy;
-    let zoomPoint = {
-      x: centralPoint.x / oldScale - stage.current.x() / oldScale,
-      y: centralPoint.y / oldScale - stage.current.y() / oldScale
-    };
-    let newPos = {
-      x: (centralPoint.x / newScale - zoomPoint.x) * newScale,
-      y: (centralPoint.y / newScale - zoomPoint.y) * newScale
-    };
+    setScale(scale => {
+      let oldScale = scale;
+      let newScale = isZoomIn ? oldScale * scaleBy : oldScale / scaleBy;
+      let zoomPoint = {
+        x: centralPoint.x / oldScale - stage.current.x() / oldScale,
+        y: centralPoint.y / oldScale - stage.current.y() / oldScale
+      };
+      let newPos = {
+        x: (centralPoint.x / newScale - zoomPoint.x) * newScale,
+        y: (centralPoint.y / newScale - zoomPoint.y) * newScale
+      };
 
-    setScale(newScale);
-    setStagePos(newPos);
+      setStagePos(newPos);
+      return newScale;
+    })
   }
 
   // 移动modal
   function moveModal(y1, x2) {
     let { left, top } = stage.current.content.getBoundingClientRect();
-    let x = stage.current.x() + x2 * scale + left;
-    let y = stage.current.y() + y1 * scale + top;
+    let x = stagePos.x + x2 * scale + left;
+    let y = stagePos.y + y1 * scale + top;
     setActivePos({ x, y });
   }
 
@@ -569,13 +592,33 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
     !onChanging &&
     !onLocating &&
     !onMoveStage
-  }));
+  }), [scale]);
 
   return (
     <Wrapper {...props} ref={wrapper} style={{
       width: stageSize.x + 'px',
       height: stageSize.y + 'px',
     }}>
+      <button 
+        onClick={() => {
+          console.log('stageSize', stageSize);
+          console.log('stagePos', stagePos);
+          const getClientRect = stage.current.getClientRect({ skipTransform: true})
+          const size = stage.current.size();
+          const width = stage.current.width();
+          const height = stage.current.height();
+          const x = stage.current.x();
+          const y = stage.current.y();
+          console.log('width height', width, height);
+          console.log('x y', x, y);
+        }} 
+        style={{
+          position: 'fixed',
+          top:0,
+          left:0,
+          zIndex: 99999
+        }}
+      >打印</button>
       {
         imageLoaded ? 
         <Stage
@@ -585,7 +628,7 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
           scale={{ x: scale, y: scale }}
           width={stageSize.x}
           height={stageSize.y}
-          // onWheel={handleWheel}
+          onWheel={handleWheel}
           onMouseDown={handleMousedown}
           onMouseMove={handleMousemove}
           onMouseUp={handleMouseup}
@@ -623,8 +666,8 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
                       x={anchor.x}
                       y={anchor.y}
                       radius={4}
-                      fill={theme.backGround}
-                      stroke={theme.secondMain}
+                      fill={theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
+                      stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
                       local={[i, index]}
                     />
                   ))}
@@ -636,8 +679,8 @@ function PicAnnotate({initialValue, onChange, picture, ...props}, ref) {
                     x={mark.corners[0]}
                     y={mark.corners[1]}
                     radius={8}
-                    fill={theme.backGround}
-                    stroke={theme.secondMain}
+                    fill={theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
+                    stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
                     strokeWidth={2}
                   />
                   <Text
