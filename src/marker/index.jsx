@@ -1,5 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { Stage, Layer, Group, Image, Rect, Circle, Text } from "react-konva";
+import { Stage, Layer, Group, Image, Rect, Circle, Text, Line } from "react-konva";
+import { Html } from 'react-konva-utils';
 import styled from "styled-components";
 import useImage from "use-image";
 import _ from "lodash";
@@ -10,6 +11,9 @@ const failedUrl = ' ';
 export const DEFAULT_MAIN = "#ff3756";
 export const DEFAULT_ANCHOR_BORDER = "#f96e84";
 export const DEFAULT_ANCHOR_BACKGROUND = "#fff";
+
+const TOOPTIP_X = 20;
+const TOOPTIP_Y = -20;
 const defaultTheme = {
   main: DEFAULT_MAIN,
   anchor: {
@@ -59,6 +63,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   const [onLocating, setOnceLocate] = useState(false);
   const [onMoveStage, setOnceMoveStage] = useState(false);
   const [movePos, setMovePos] = useState({ x: 0, y: 0 });
+  const [tooltipPos, setTooltipPos] = useState({ x: -50, y: -50 });
 
   const [image, imageStatus] = useImage(picture?.url || failedUrl);
   const stage = useRef();
@@ -70,6 +75,12 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   const left = useMemo(()=> {
     return stageSize.x / 2 - imageSize.x / 2;
   }, [stageSize.x, imageSize.x]);
+  const onMarkOperating = useMemo(()=> {
+    return onDrawing || onChanging || onLocating;
+  }, [onDrawing, onChanging, onLocating]);
+  const onStageOperating = useMemo(()=> {
+    return onMoveStage;
+  }, [onMoveStage]);
 
   function handleResize() {
     let outerWidth = getOuterWidth(wrapper.current);
@@ -118,6 +129,8 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
       changePositionStart(e.target.attrs.index);
     } else if (e.target.attrs.name === "anchor") {
       changeAnchorStart(e.target.attrs.local[0], e.target.attrs.local[1]);
+    } else if (e.target.attrs.name === "delete") {
+      deleteMark(e.target.attrs.index);
     } else {
       if (mode === "mark") {
         addSelectStart();
@@ -127,7 +140,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
     }
   }
 
-  function handleMousemove() {
+  function handleMousemove(e) {
     if (onLocating) {
       changePosition();
     } else if (onChanging) {
@@ -143,6 +156,8 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
         }
       }
     }
+
+    handleTooltip(e);
   }
 
   function handleMouseup() {
@@ -152,6 +167,12 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
     changeAnchorEnd();
     addSelectEnd();
     setStart(null, null);
+  }
+
+  function handleDblClick(e) {
+    if (e.target.attrs.name === "marker") {
+      alert(e.target.attrs.index);
+    } 
   }
 
   function addSelectStart() {
@@ -372,9 +393,23 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   }
 
   function moveStageEnd() {
-    console.log('moveStageEnd', stagePos, stagePos.x, stagePos.y)
     setMovePos({ x: 0, y: 0 });
     setOnceMoveStage(false);
+  }
+
+  function deleteMark() {
+    if (currentMarkIndex > -1) {
+      let tempMarkList = _.cloneDeep(marks);
+      tempMarkList.splice(currentMarkIndex, 1);
+      setCurrent(-1);
+      setMarks(tempMarkList);
+      tempMarkList = null;
+      setActivePos({ x: 0, y: 0 });
+      setMovePos({ x: 0, y: 0 });
+      setOnceLocate(false);
+      setOnceChange(false);
+      setOnceDraw(false);
+    }
   }
 
   function hover(e, flag) {
@@ -385,6 +420,12 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
         document.body.style.cursor = "default";
       }
     } else if (e.target.attrs.name === "anchor") {
+      if (flag) {
+        document.body.style.cursor = "pointer";
+      } else {
+        document.body.style.cursor = "default";
+      }
+    } else if (e.target.attrs.name === "delete") {
       if (flag) {
         document.body.style.cursor = "pointer";
       } else {
@@ -404,6 +445,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   }
 
   function setStart(startX, startY, index = currentMarkIndex) {
+    if (index < 0) return;
     if (onMoveStage) return;
     let tempMarkList = _.cloneDeep(marks);
     tempMarkList[index].startX = startX;
@@ -519,8 +561,6 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
     const imageYStart = stagePos.y + top * scale;
     const imageYEnd = imageYStart + imageSize.y * scale;
     return pointers.some(pointer => {
-      // console.log(`hasExceededBoundary ${imageYStart} ${pointerY} ${imageYEnd}`)
-      console.log(`hasExceededBoundary ${imageYStart} ${pointer[1]} ${imageYEnd}`)
       return pointer[0] < imageXStart || pointer[0] > imageXEnd || pointer[1] < imageYStart || pointer[1] > imageYEnd;
     });
   }
@@ -553,6 +593,14 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
     let x = stagePos.x + x2 * scale + left;
     let y = stagePos.y + y1 * scale + top;
     setActivePos({ x, y });
+  }
+
+  function handleTooltip(e) {
+    if (e.target.attrs.name === 'marker' || e.target.attrs.name === 'mark') {
+      const x = stage.current.getPointerPosition()?.x + TOOPTIP_X;
+      const y = stage.current.getPointerPosition()?.y + TOOPTIP_Y;
+      setTooltipPos({x, y});
+    }
   }
 
   useEffect(() => {
@@ -666,6 +714,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
           onMouseUp={handleMouseup}
           onMouseOver={e => hover(e, true)}
           onMouseOut={e => hover(e, false)}
+          onDblClick={handleDblClick}
         >
           <Layer>
             <Image
@@ -707,7 +756,7 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
                 </Group>
                 <Group>
                   <Circle
-                    name="mark"
+                    name={[currentMarkIndex].includes(index) ? "delete" : "mark"}
                     index={index}
                     x={mark.corners[0]}
                     y={mark.corners[1]}
@@ -716,19 +765,68 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
                     stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
                     strokeWidth={2 / scale}
                   />
+                  <Line
+                    name="delete"
+                    index={index}
+                    points={[mark.corners[0] - 4 / scale, mark.corners[1], mark.corners[0] + 4 / scale, mark.corners[1]]}
+                    tension={1}
+                    stroke={theme.main}
+                    align="left"
+                    verticalAlign="middle"
+                    visible={[currentMarkIndex].includes(index) && !onMarkOperating}
+                  />
                   <Text
                     name="mark"
                     index={index}
-                    x={mark.corners[0] - 3 / scale}
+                    x={mark.corners[0] - 3.5 / scale}
                     y={mark.corners[1] - 5 / scale}
-                    text={mark.number + 1}
+                    text={index + 1}
                     fontSize={12 / scale}
                     fontStyle="bold"
                     fill={theme.main}
                     align="left"
                     verticalAlign="middle"
+                    visible={![currentMarkIndex].includes(index) || onMarkOperating}
                   />
                 </Group>
+                {/* <Text
+                  name="tooltip"
+                  index={index}
+                  x={tooltipPos.x}
+                  y={tooltipPos.y}
+                  text={mark.content}
+                  fontSize={36 / scale}
+                  strokeWidth={2 / scale}
+                  fontStyle="bold"
+                  fill="#000"
+                  // fill={theme.main}
+                  // fill={theme.anchor.backGround}
+                  // stroke={'#000'}
+                  align="left"
+                  verticalAlign="middle"
+                  zIndex={99999}
+                  opacity={0.8}
+                  visible={[hoverMark].includes(index) && !onMarkOperating}
+                /> */}
+                <Html
+                  divProps={{
+                    style: {
+                      position: 'absolute',
+                      top: tooltipPos.y + 'px',
+                      left: tooltipPos.x + 'px',
+                      zIndex: 99999,
+                      transform: 'none',
+                      visibility: ([hoverMark].includes(index) && !onMarkOperating) ? 'visible' : 'hidden',
+                    },
+                  }}
+                >
+                  <div 
+                    style={{
+                      fontSize: '16px',
+                      color: 'darkred'
+                    }}
+                  >{mark.content}</div>
+                </Html>
               </Group>
             ))}
           </Layer>

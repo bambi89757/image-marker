@@ -9,12 +9,14 @@ export default (flatMarks, stageSize, imageSize) => {
       _width: width,
       _height: height,
       basicCanvas,
-      number
+      number,
+      ...attrs
     } = m;
     const scale = imageSize.x / basicCanvas.x;
     const top = stageSize.y / 2 - imageSize.y / 2;
     const left = stageSize.x / 2 - imageSize.x / 2;
     return {
+      ...attrs,
       basicCanvas,
       number,
       startX: null,

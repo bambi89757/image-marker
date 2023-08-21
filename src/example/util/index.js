@@ -1,8 +1,9 @@
 /** local start */
 
-const _flatServerMark = ({ position, number }) => {
+const _flatServerMark = ({ position, number, ...attrs }) => {
   const { width, height, x, y, basicCanvas } = position;
   return {
+    ...attrs,
     _width: width,
     _height: height,
     _x: x,
