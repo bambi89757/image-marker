@@ -42,8 +42,7 @@ const Wrapper = styled.div`
 `;
 
 
-
-function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...props}, ref) {
+function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({index}) => <>{index + 1}</>, {x: TOOPTIP_X, y: TOOPTIP_Y}],onChange, onDblClick,...props}, ref) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [marksInitialized, setMarksInitialized] = useState(false);
   const [marks, setMarks] = useState([]);
@@ -81,6 +80,18 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
   const onStageOperating = useMemo(()=> {
     return onMoveStage;
   }, [onMoveStage]);
+  const divProps = useCallback((index)=> {
+    return {
+      style: {
+        position: 'absolute',
+        top: tooltipPos.y + 'px',
+        left: tooltipPos.x + 'px',
+        zIndex: 99999,
+        transform: 'none',
+        visibility: ([hoverMark].includes(index) && !onMarkOperating) ? 'visible' : 'hidden',
+      },
+    }
+  }, [tooltipPos, hoverMark, onMarkOperating])
 
   function handleResize() {
     let outerWidth = getOuterWidth(wrapper.current);
@@ -171,7 +182,10 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
 
   function handleDblClick(e) {
     if (e.target.attrs.name === "marker") {
-      alert(e.target.attrs.index);
+      const pointer = stage.current.getPointerPosition();
+      const index = e.target.attrs.index;
+      const item = _.cloneDeep(marks[index]);
+      onDblClick(e.evt, {item, index , pointer})
     } 
   }
 
@@ -597,8 +611,8 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
 
   function handleTooltip(e) {
     if (e.target.attrs.name === 'marker' || e.target.attrs.name === 'mark') {
-      const x = stage.current.getPointerPosition()?.x + TOOPTIP_X;
-      const y = stage.current.getPointerPosition()?.y + TOOPTIP_Y;
+      const x = stage.current.getPointerPosition()?.x + (tooltip[1]?.x || TOOPTIP_X);
+      const y = stage.current.getPointerPosition()?.y + (tooltip[1]?.y || TOOPTIP_Y);
       setTooltipPos({x, y});
     }
   }
@@ -789,43 +803,8 @@ function PicAnnotate({initialValue, onChange, picture, theme = defaultTheme,...p
                     visible={![currentMarkIndex].includes(index) || onMarkOperating}
                   />
                 </Group>
-                {/* <Text
-                  name="tooltip"
-                  index={index}
-                  x={tooltipPos.x}
-                  y={tooltipPos.y}
-                  text={mark.content}
-                  fontSize={36 / scale}
-                  strokeWidth={2 / scale}
-                  fontStyle="bold"
-                  fill="#000"
-                  // fill={theme.main}
-                  // fill={theme.anchor.backGround}
-                  // stroke={'#000'}
-                  align="left"
-                  verticalAlign="middle"
-                  zIndex={99999}
-                  opacity={0.8}
-                  visible={[hoverMark].includes(index) && !onMarkOperating}
-                /> */}
-                <Html
-                  divProps={{
-                    style: {
-                      position: 'absolute',
-                      top: tooltipPos.y + 'px',
-                      left: tooltipPos.x + 'px',
-                      zIndex: 99999,
-                      transform: 'none',
-                      visibility: ([hoverMark].includes(index) && !onMarkOperating) ? 'visible' : 'hidden',
-                    },
-                  }}
-                >
-                  <div 
-                    style={{
-                      fontSize: '16px',
-                      color: 'darkred'
-                    }}
-                  >{mark.content}</div>
+                <Html divProps={divProps(index)}>
+                  {tooltip[0]({item: mark, index})}
                 </Html>
               </Group>
             ))}

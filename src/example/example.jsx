@@ -64,6 +64,17 @@ const PicWrapper = styled.div`
   }
 `;
 
+const Tooltip = ({item, index}) => {
+  return (
+    <div 
+      style={{
+        fontSize: '16px',
+        color: 'darkred'
+      }}
+    >第{index + 1}个标注：{item.content}</div>
+  )
+}
+
 const Example = () => {
     const [picture, setPicture] = useState(null);
     const [marks, setMarks] = useState([]);
@@ -106,7 +117,9 @@ const Example = () => {
         </div>
         <div className="right-content">
           <PicWrapper>
-              <PicAnnotate ref={picAnnotate} initialValue={marks} picture={picture} className="stage"/>
+              <PicAnnotate ref={picAnnotate} initialValue={marks} tooltip={[Tooltip]} picture={picture} onDblClick={(e, {item})=> {
+                console.log('Example onDblClick', item);
+              }} className="stage"/>
           </PicWrapper>
           <ToolBar picture={picture} picAnnotate={picAnnotate} />
           <Detail picture={picture} value={marks} onChange={setMarks}/>  
