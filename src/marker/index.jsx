@@ -21,6 +21,17 @@ const defaultTheme = {
     backGround: DEFAULT_ANCHOR_BACKGROUND
   },
 };
+
+function generateTheme(color) {
+  return {
+    main: color,
+    anchor: {
+      border: color + 65,
+      backGround: '#fff'
+    }
+  }
+}
+
 function getOuterWidth(element) {
   return element.parentElement?.clientWidth - parseFloat(getComputedStyle(element).borderLeftWidth) - parseFloat(getComputedStyle(element).borderRightWidth);
 }
@@ -47,6 +58,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
   const [marksInitialized, setMarksInitialized] = useState(false);
   const [marks, setMarks] = useState([]);
   const [currentMarkIndex, setCurrent] = useState(-1);
+  const [mColor, setMColor] = useState(theme.main);
 
 
   const [mode, setMode] = useState("normal");
@@ -80,6 +92,9 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
   const onStageOperating = useMemo(()=> {
     return onMoveStage;
   }, [onMoveStage]);
+  const Theme = useMemo(()=> {
+    return generateTheme(mColor);
+  }, [mColor]);
   const divProps = useCallback((index)=> {
     return {
       style: {
@@ -102,8 +117,12 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
     });
   }
 
-  function handleMark() {
-    setMode("mark");
+  function handleMark(isMarking = true) {
+    if (isMarking) {
+      setMode("mark");
+    } else {
+      setMode("normal");
+    }
   }
 
   function handleWheel(e) {
@@ -172,7 +191,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
   }
 
   function handleMouseup() {
-    setMode("normal");
+    // setMode("normal");
     moveStageEnd();
     changePositionEnd();
     changeAnchorEnd();
@@ -203,6 +222,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
       startY: positionY,
       corners: [positionX, positionY],
       number: marks.length,
+      color: mColor,
       anchors: []
     };
     setMarks([...marks, mark]);
@@ -240,10 +260,6 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
 
   function addSelectEnd() {
     if (onDrawing) {
-      moveModal(
-        marks[currentMarkIndex].corners[1],
-        marks[currentMarkIndex].corners[2]
-      );
       setOnceDraw(false);
     }
   }
@@ -329,10 +345,6 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
 
   function changeAnchorEnd() {
     if (onChanging) {
-      moveModal(
-        marks[currentMarkIndex].corners[1],
-        marks[currentMarkIndex].corners[2]
-      );
       setOnceChange(false);
     }
   }
@@ -376,10 +388,6 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
 
   function changePositionEnd() {
     if (onLocating) {
-      moveModal(
-        marks[currentMarkIndex].corners[1],
-        marks[currentMarkIndex].corners[2]
-      );
       setMovePos({ x: 0, y: 0 });
       setOnceLocate(false);
     }
@@ -654,18 +662,13 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
     }
   }, [stageSize.x, imageSize.x, initialValue, imageLoaded]);
 
-  useEffect(() => {
-    if (currentMarkIndex > -1) {
-      moveModal(
-        marks[currentMarkIndex].corners[1],
-        marks[currentMarkIndex].corners[2]
-      );
-    }
-  }, [currentMarkIndex]);
-
   useEffect(()=> {
     onChange && onChange(_.cloneDeep(marks));
   }, [marks])
+
+  useEffect(()=> {
+    console.log('mColor', mColor)
+  }, [mColor])
 
   useImperativeHandle(ref, () => ({
     handleMark,
@@ -673,6 +676,9 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
     handleZoomOut,
     setValue: setMarks,
     getValue: () => _.cloneDeep(marks),
+    setMColor: (color) => {
+      setMColor(color)
+    },
     activePos,
     activeIndex: currentMarkIndex,
     active: currentMarkIndex > -1 &&
@@ -748,7 +754,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
                   y={mark.corners[1]}
                   width={mark.width}
                   height={mark.height}
-                  stroke={theme.main}
+                  stroke={generateTheme(mark.color)?.main || Theme.main}
                   strokeWidth={3 / scale}
                 ></Rect>
                 <Group
@@ -762,8 +768,8 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
                       x={anchor.x}
                       y={anchor.y}
                       radius={4 / scale}
-                      fill={theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
-                      stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
+                      fill={generateTheme(mark.color)?.anchor?.backGround || Theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
+                      stroke={generateTheme(mark.color)?.anchor?.border || Theme?.anchor?.border || defaultTheme?.anchor?.border }
                       local={[i, index]}
                     />
                   ))}
@@ -775,8 +781,8 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
                     x={mark.corners[0]}
                     y={mark.corners[1]}
                     radius={8 / scale}
-                    fill={theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
-                    stroke={theme?.anchor?.border || defaultTheme?.anchor?.border }
+                    fill={generateTheme(mark.color)?.anchor?.backGround || Theme?.anchor?.backGround || defaultTheme?.anchor?.backGround }
+                    stroke={generateTheme(mark.color)?.anchor?.border || Theme?.anchor?.border || defaultTheme?.anchor?.border }
                     strokeWidth={2 / scale}
                   />
                   <Line
@@ -784,7 +790,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
                     index={index}
                     points={[mark.corners[0] - 4 / scale, mark.corners[1], mark.corners[0] + 4 / scale, mark.corners[1]]}
                     tension={1}
-                    stroke={theme.main}
+                    stroke={generateTheme(mark.color)?.main || Theme.main}
                     align="left"
                     verticalAlign="middle"
                     visible={[currentMarkIndex].includes(index) && !onMarkOperating}
@@ -797,7 +803,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
                     text={index + 1}
                     fontSize={12 / scale}
                     fontStyle="bold"
-                    fill={theme.main}
+                    fill={generateTheme(mark.color)?.main || Theme.main}
                     align="left"
                     verticalAlign="middle"
                     visible={![currentMarkIndex].includes(index) || onMarkOperating}

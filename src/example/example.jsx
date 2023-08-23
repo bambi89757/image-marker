@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import '@/assets/css/base.css';
 import { useParams } from "react-router-dom";
 import { getPictureDetail, getPictures, getMarks } from "./mocks";
 import PicAnnotate, { ToolBar, DEFAULT_MAIN, DEFAULT_ANCHOR_BORDER } from "../marker";

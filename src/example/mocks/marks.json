@@ -4,6 +4,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注0了这里",
+    "color": "#ff3756",
     "updated_at": 1619507022524,
     "position": {
       "width": 49,
@@ -21,6 +22,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注1了这里",
+    "color": "#ff3756",
     "updated_at": 1619507022524,
     "position": {
       "width": 90,
@@ -38,6 +40,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注1了这里2",
+    "color": "#ff3756",
     "updated_at": 1619507022524,
     "position": {
       "width": 90,
@@ -55,6 +58,7 @@
     "picture_id": "2",
     "user_name": "nikki",
     "content": "我标注1了这里_3",
+    "color": "#ff3756",
     "updated_at": 1619420622524,
     "position": {
       "width": 90,
@@ -72,6 +76,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里",
+    "color": "#ff3756",
     "updated_at": 1619420622524,
     "position": {
       "width": 40,
@@ -89,6 +94,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里_2",
+    "color": "#ff3756",
     "updated_at": 1619247822524,
     "position": {
       "width": 40,
@@ -106,6 +112,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里_3",
+    "color": "#ff3756",
     "updated_at": 1619334222524,
     "position": {
       "width": 40,
@@ -123,6 +130,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注3了这里",
+    "color": "#ff3756",
     "updated_at": 1619247822524,
     "position": {
       "width": 90,
@@ -140,6 +148,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注3了这里_2",
+    "color": "#ff3756",
     "updated_at": 1619161422524,
     "position": {
       "width": 90,
@@ -157,6 +166,7 @@
     "picture_id": "2",
     "user_name": "bambi",
     "content": "我标注2了这里_3",
+    "color": "#ff3756",
     "updated_at": 1619075022524,
     "position": {
       "width": 90,
