@@ -790,6 +790,7 @@ function PicAnnotate({initialValue, picture, theme = defaultTheme, tooltip = [({
                     index={index}
                     points={[mark.corners[0] - 4 / scale, mark.corners[1], mark.corners[0] + 4 / scale, mark.corners[1]]}
                     tension={1}
+                    strokeWidth={2 / scale}
                     stroke={generateTheme(mark.color)?.main || Theme.main}
                     align="left"
                     verticalAlign="middle"
